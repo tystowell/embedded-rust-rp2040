@@ -22,10 +22,6 @@ fn main() -> ! {
 
     while p.RESETS.reset_done.read().io_bank0().bit_is_clear() {}
 
-    p.RESETS.reset.modify(|_, w| w.pads_bank0().clear_bit());
-
-    while p.RESETS.reset_done.read().pads_bank0().bit_is_clear() {}
-
     p.RESETS.reset.modify(|_, w| w.pwm().clear_bit());
 
     while p.RESETS.reset_done.read().pwm().bit_is_clear() {}
