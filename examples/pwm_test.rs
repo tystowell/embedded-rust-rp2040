@@ -18,19 +18,17 @@ fn main() -> ! {
     let io = p.IO_BANK0;
     let pads = p.PADS_BANK0;
 
+    p.RESETS.reset.modify(|_, w| w.io_bank0().clear_bit());
 
-
-    p.RESETS.reset.modify(|_, w| w.pwm().clear_bit());
-
-    while p.RESETS.reset_done.read().pwm().bit_is_clear() {}
+    while p.RESETS.reset_done.read().io_bank0().bit_is_clear() {}
 
     p.RESETS.reset.modify(|_, w| w.pads_bank0().clear_bit());
 
     while p.RESETS.reset_done.read().pads_bank0().bit_is_clear() {}
 
-    pads.gpio[0].reset();
+    p.RESETS.reset.modify(|_, w| w.pwm().clear_bit());
 
-
+    while p.RESETS.reset_done.read().pwm().bit_is_clear() {}
 
     pwm.ch0_csr.write(|w| w.ph_correct().clear_bit()); //Disable ph_correct
 
@@ -43,7 +41,6 @@ fn main() -> ! {
     pwm.ch0_csr.write(|w| w.b_inv().clear_bit()); //Don't invert channel B
 
     pwm.ch0_top.write(|w| unsafe { w.ch0_top().bits(0xffffu16) }); //Set TOP register to max value
-
 
     pwm.ch0_cc.write(|w| unsafe { w.a().bits(0x7fffu16) }); //Default duty cycle of 50%
 
