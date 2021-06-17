@@ -26,7 +26,9 @@ fn main() -> ! {
 
     while p.RESETS.reset_done.read().pads_bank0().bit_is_clear() {}
 
-    pad.gpio[0].reset();
+    pads.gpio[0].reset();
+
+    io.gpio[0].gpio_ctrl.write_with_zero(|w| w.funcsel().pwm_a_0());
 
     //pwm.ch0_csr.write(|w| w.ph_correct().set_bit());
 
@@ -35,8 +37,6 @@ fn main() -> ! {
     //pwm.ch0_cc.write(|w| unsafe { w.b().bits(0x7fff) });
 
     pwm.ch0_csr.write(|w| w.en().set_bit());
-
-    io.gpio[0].gpio_ctrl.write_with_zero(|w| w.funcsel().pwm_a_0());
 
     loop {
         pwm.ch0_cc.write(|w| unsafe { w.a().bits(0x0000) });
