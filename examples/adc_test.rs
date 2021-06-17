@@ -21,20 +21,19 @@ fn main() -> ! {
 
     while p.RESETS.reset_done.read().adc().bit_is_clear() {}
 
-    //funcsel doesn't appear to have an option for adc?
-    //p.IO_BANK0.gpio[26].gpio_ctrl.write_with_zero(|x| x.funcsel().sio_0());
+    p.IO_BANK0.gpio[26].gpio_ctrl.write_with_zero(|x| x.funcsel().null()); // funcsel for ADC is NULL (generic type for peripherals only defined on a few pins)
 
-    adc.cs.write(|w| unsafe { w.rrobin().bits(0x00) });
+    adc.cs.write(|w| unsafe { w.rrobin().bits(0x00) }); // Disable round robin sampling of pins
 
-    adc.cs.write(|w| unsafe { w.ainsel().bits(0) });
+    adc.cs.write(|w| unsafe { w.ainsel().bits(0) }); // Set the current pin select to ADC0 (all the adc inputs are mux'ed to a single ADC)
 
-    adc.cs.write(|w| w.en().set_bit());
+    adc.cs.write(|w| w.en().set_bit()); // Enable the ADC
     
     loop {
         adc.cs.write(|w| w.start_once().set_bit());
 
         while adc.cs.read().ready().bit_is_clear() {}
 
-        adc.result.read().result() // Figure out how to unpack this type
+        adc.result.read().result(); // Figure out how to unpack this type
     }
 }
