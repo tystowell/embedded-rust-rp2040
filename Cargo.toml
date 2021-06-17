@@ -1,0 +1,16 @@
+[package]
+name = "pico-test"
+version = "0.1.0"
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+cortex-m = "0.7.1"
+rp2040-pac = { git = "https://github.com/rp-rs/rp2040-pac", branch="main" }
+cortex-m-rt = "0.6.10"
+embedded-hal = { version = "0.2.4", features = ["unproven"] }
+panic-halt = "0.2.0"
+
+[dev-dependencies]
+rp2040-boot2 = { git = "https://github.com/rp-rs/rp2040-boot2-rs", branch="main" }
