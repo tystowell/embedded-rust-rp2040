@@ -36,7 +36,7 @@ fn main() -> ! {
 
     pwm.ch0_csr.write(|w| w.en().set_bit());
 
-    io.gpio[25].gpio_ctrl.write_with_zero(|w| w.funcsel().pwm_a_0());
+    io.gpio[0].gpio_ctrl.write_with_zero(|w| w.funcsel().pwm_a_0());
 
     loop {
         pwm.ch0_cc.write(|w| unsafe { w.a().bits(0x0000) });
