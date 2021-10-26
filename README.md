@@ -57,3 +57,27 @@ This was a benefit of just downloading the HAL, since it made building code fast
 Then, to upload the code, I just plugged in the pi pico while holding down the BOOTSEL button. This made the pi pico reveal itself as a "usb stick" type device, which I could drag and drop the .uf2 file into. (Yeah, this was a pretty stupid toolchain. Don't judge me.)
 
 ## Implementing PWM
+Implementing the PWM took a bit, but most of it was composed of finding dumb bugs. Right of the bat, it proceeded considerably faster with the capability to use my blink code to quickly test if the code was making it somewhere. I found a couple places where it was hanging on a reset, and a few other small details, but eventually it worked. Implementing the PWM was definitely the climax of my work on this repository, because after I finished it I moved on to trying to implement it into the RP2040 HAL. So, I will describe in some detail the necessary process for controlling a PWM on the pi pico:
+
+In lines 21-27, I repeat the following process twice, for io_bank and pwm:
+1) Write to a reset register to reset a peripheral
+2) Read from a register that is pulled low during the reset process, so we can wait for the reset to finish.
+
+1) In line 29, I write 0 to bit 1 of CH0_CSR (datasheet 552) to disable phase correct mode (datasheet 545)  
+2) In line 31, I write 0x01 to CH0_DIV (datasheet 552) to set the clock division value to 1 (datasheet 547)  
+3) In line 33, I write write 0 to bits 4 and 5 of CH0_CSR (datasheet 552) to set the PWM output to be driven by the clock (datasheet 448)  
+4) In line 35, I write 0 to bit 2 of CH0_CSR (datasheet 552) to keep it from inverting PWM channel A  
+5) In line 37, I write 0 to bit 3 of CH0_CSR (datasheet 552) to keep it from inverting PWM channel B  
+6) In line 39, I write 0xffff to CH0_TOP (datasheet 553) so that we have the highest granularity of output frequencies (datasheet 544)
+7) In line 41, I write 0x7fff to the first 16 bits of CH0_CC (datasheet 553) so the duty cycle is 50% (0x7fff/CH0_TOP = .5) (datasheet 544)
+8) In line 43, I write 0x0000 to CH0_CTR (datasheet 553) to reset it (datasheet 544)
+9) In line 45, I write 1 to bit 0 of CH0_CSR (datasheet 552) to enable it
+10) In line 49, I write 1 to bit 6 of PADS_BANK0: GPIO0 (datasheet 321) to enable inputs on the pad
+11) In line 50, I write 0 to bit 7 of PADS_BANK0: GPIO0 (datasheet 321) to enable outputs on the pad
+12) In line 52, I write 0x4 (datasheet 258) to the first four bits of IO_BANK0: GPIO0_CTRL (datasheet 268) to connect the output to the PWM output
+
+Note: Steps 10 and 11 look bad, but I got those from the C equivalents in the official pico-sdk, so they MUST be ok... right?
+
+At this point, the PWM output should work. I also included a loop to toggle between the PWM counter being on and off, but that was more for fun :).
+
+Once I'd finished this, I moved onto trying to make a HAL implementation. The result, found here, https://github.com/tystowell/rp-hal, was ok.
