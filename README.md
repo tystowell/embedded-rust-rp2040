@@ -59,10 +59,11 @@ Then, to upload the code, I just plugged in the pi pico while holding down the B
 ## Implementing PWM
 Implementing the PWM took a bit, but most of it was composed of finding dumb bugs. Right of the bat, it proceeded considerably faster with the capability to use my blink code to quickly test if the code was making it somewhere. I found a couple places where it was hanging on a reset, and a few other small details, but eventually it worked. Implementing the PWM was definitely the climax of my work on this repository, because after I finished it I moved on to trying to implement it into the RP2040 HAL. So, I will describe in some detail the necessary process for controlling a PWM on the pi pico:
 
-In lines 21-27, I repeat the following process twice, for io_bank and pwm:
+In lines 21-27, I repeat the following process twice, to reset the io_bank and pwm:
 1) Write to a reset register to reset a peripheral
-2) Read from a register that is pulled low during the reset process, so we can wait for the reset to finish.
+2) Read from a register that is pulled low during the reset process, so we can wait for the reset to finish.  
 
+Then, I proceed into some PWM specific functionality:
 1) In line 29, I write 0 to bit 1 of CH0_CSR (datasheet 552) to disable phase correct mode (datasheet 545)  
 2) In line 31, I write 0x01 to CH0_DIV (datasheet 552) to set the clock division value to 1 (datasheet 547)  
 3) In line 33, I write write 0 to bits 4 and 5 of CH0_CSR (datasheet 552) to set the PWM output to be driven by the clock (datasheet 448)  
